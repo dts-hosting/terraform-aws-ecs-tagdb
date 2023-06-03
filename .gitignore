@@ -1,0 +1,9 @@
+__pycache__/
+docker/dynamodb/
+src/*
+!src/tagdb.py
+!src/requirements.txt
+.terraform/
+.terraform.*lock*
+terraform.tf*
+!terraform.tfvars.example

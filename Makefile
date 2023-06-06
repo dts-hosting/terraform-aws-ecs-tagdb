@@ -17,5 +17,10 @@ clean:
 import:
 	python-lambda-local src/tagdb.py event.json -f handler -l src
 
+.PHONY: install
+install:
+	@rbenv install -s
+	@gem install overcommit && overcommit --install && overcommit --sign pre-commit
+
 reset:
 	rm ./docker/dynamodb/*.db

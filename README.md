@@ -2,7 +2,7 @@
 
 Provides a Lambda and DynamoDB table for importing ECS service tags. The
 table can then be used for other integrations more easily than having to
-go through the ECS service tags.
+go through the ECS service tags directly.
 
 ## Usage
 

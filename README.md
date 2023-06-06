@@ -1,15 +1,26 @@
 # Terraform AWS ECS TagDB
 
-Provides a Lambda for importing ECS service tags into a DynamoDB table.
-The table can then be used for other integrations more easily than having
-to go through ECS service tags.
+Provides a Lambda and DynamoDB table for importing ECS service tags. The
+table can then be used for other integrations more easily than having to
+go through the ECS service tags.
 
-## Module config
+## Usage
 
-- `tagdb_env` (default: `test`)
-- `tagdb_key_tag` (default: `ServiceId`)
-- `tagdb_schedule` (default: `cron(0 0 * * ? *)`)
-- `tagdb_table` (default: `tagdb`)
+```hcl
+module "tagdb" {
+  source = "github.com/dts-hosting/terraform-aws-ecs-tagdb"
+
+  # defaults
+  tagdb_env                    = "production"
+  tagdb_key_tag                = "ServiceId"
+  tagdb_schedule               = "cron(0 0 * * ? *)"
+  tagdb_table                  = "tagdb"
+  tagdb_table_read_capacity    = 1
+  tagdb_table_stream_view_type = "NEW_IMAGE"
+  tagdb_table_write_capacity   = 1
+  tagdb_table_indexes          = []
+}
+```
 
 ## Local testing
 

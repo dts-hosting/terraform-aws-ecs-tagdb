@@ -31,11 +31,17 @@ docker compose up -d
 AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./create_db.sh
 ```
 
-Run the tagdb function handler:
+Run the tagdb function handler to import data:
 
 ```bash
 pip install python-lambda-local
 AWS_PROFILE=dspaceprogramteam make import
+```
+
+Run the scan script to see the imported data:
+
+```bash
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./scan.sh
 ```
 
 ## Building the lambda package

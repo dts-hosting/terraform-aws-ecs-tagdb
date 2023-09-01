@@ -13,6 +13,8 @@ build: clean
 
 clean:
 	rm -rf build/*
+	rm -rf src/*/
+	rm src/six.py
 
 import:
 	python-lambda-local src/tagdb.py event.json -f handler -l src

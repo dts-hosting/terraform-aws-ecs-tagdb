@@ -1,6 +1,6 @@
 #!/bin/bash
 # AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./create_db.sh
-# AWS_PROFILE=dspaceprogramteam ./create_db.sh https://dynamodb.us-west-2.amazonaws.com
+# AWS_PROFILE=myprofile ./create_db.sh https://dynamodb.us-west-2.amazonaws.com
 
 ENDPOINT_URL=${1:-"http://localhost:8000"}
 

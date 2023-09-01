@@ -35,8 +35,17 @@ Run the tagdb function handler:
 
 ```bash
 pip install python-lambda-local
-AWS_PROFILE=dspaceprogramteam make import
+AWS_PROFILE=myprofile make import
+
+# if the table is deployed in AWS you can import directly
+AWS_PROFILE=myprofile TAGDB_ENV=production make import
 ```
+
+Environment variables:
+
+- TAGDB_ENV (default: `test`)
+- TAGDB_KEY_TAG (default: `ServiceId`)
+- TAGDB_TABLE (default: `tagdb`)
 
 ## Building the lambda package
 

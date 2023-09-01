@@ -34,13 +34,13 @@ def handler(event, context):
 
                     if key_tag in data:
                         batch.append(data)
-                        logger.info(data)
                 except Exception as e:
-                    logger.error(cluster, arn, e)
+                    logger.error(f"{e}: {arn}")
 
     for data in batch:
         # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html#Streams.Processing
         # PutItem with no changes does not trigger a stream update
+        logger.info(data)
         response = table.put_item(
             Item=data
         )

@@ -37,11 +37,54 @@ def handler(event, context):
                 except Exception as e:
                     logger.error(f"{e}: {arn}")
 
+    keys = get_keys(table, key_tag)
     for data in batch:
-        # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html#Streams.Processing
-        # PutItem with no changes does not trigger a stream update
-        logger.info(data)
-        response = table.put_item(
-            Item=data
-        )
+        response = update(table, key_tag, data)
         logger.info(response)
+        if data[key_tag] in keys:
+            keys.remove(data[key_tag])  # remove this entry from keys if found
+
+    # delete items for which there was no matching key (the remaining keys)
+    # i.e. there's no longer a corresponding ecs service for this key
+    for key in keys:
+        response = delete(table, key_tag, key)
+        logger.info(response)
+
+
+def delete(table, key_tag, key):
+    return table.delete_item(
+        Key={
+            key_tag: key
+        }
+    )
+
+
+def get_keys(table, key_tag):
+    response = table.scan()
+    data = response['Items']
+
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+    return [i[key_tag] for i in data]
+
+
+def update(table, key_tag, data):
+    logger.info(data)
+    item = data.copy()  # don't mutate the original data
+    target = item.pop(key_tag)
+    update_expression = 'SET {}'.format(','.join(f'#{k}=:{k}' for k in item))
+    expression_attribute_values = {f':{k}': v for k, v in item.items()}
+    expression_attribute_names = {f'#{k}': k for k in item}
+
+    # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html#Streams.Processing
+    # PutItem/UpdateItem with no changes does not trigger a stream update
+    return table.update_item(
+        Key={
+            key_tag: target,
+        },
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values,
+        ExpressionAttributeNames=expression_attribute_names,
+        ReturnValues='UPDATED_NEW',
+    )

@@ -38,10 +38,26 @@ def handler(event, context):
                     logger.error(f"{e}: {arn}")
 
     for data in batch:
-        # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html#Streams.Processing
-        # PutItem with no changes does not trigger a stream update
-        logger.info(data)
-        response = table.put_item(
-            Item=data
-        )
+        response = update(table, key_tag, data)
         logger.info(response)
+
+
+def update(table, key, data):
+    logger.info(data)
+    item = data.copy() # don't mutate the original data
+    target = item.pop(key)
+    update_expression = 'SET {}'.format(','.join(f'#{k}=:{k}' for k in item))
+    expression_attribute_values = {f':{k}': v for k, v in item.items()}
+    expression_attribute_names = {f'#{k}': k for k in item}
+
+    # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html#Streams.Processing
+    # PutItem/UpdateItem with no changes does not trigger a stream update
+    return table.update_item(
+        Key={
+            key: target,
+        },
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attribute_values,
+        ExpressionAttributeNames=expression_attribute_names,
+        ReturnValues='UPDATED_NEW',
+    )

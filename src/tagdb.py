@@ -22,7 +22,7 @@ def handler(event, context):
     table = ddb_client.Table(os.environ.get('TAGDB_TABLE', 'tagdb'))
 
     for cluster in ecs_client.list_clusters(maxResults=100).get('clusterArns'):
-        for page in ecs_pager.paginate(cluster=cluster, PaginationConfig={'MaxItems': 10}):
+        for page in ecs_pager.paginate(cluster=cluster, PaginationConfig={'MaxItems': 1000}):
             for arn in page.get('serviceArns'):
                 try:
                     response = ecs_client.list_tags_for_resource(

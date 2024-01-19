@@ -28,12 +28,14 @@ Create the DynamoDB tagdb table and run DynamoDB local using Docker:
 
 ```bash
 docker compose up -d
+sudo chown $USER -R docker
 AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./create_db.sh
 ```
 
-Run the tagdb function handler to import data:
+Run the tagdb function handler to read tags from ECS and import data:
 
 ```bash
+# import into ddb local
 pip install python-lambda-local
 AWS_PROFILE=myprofile make import
 

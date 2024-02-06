@@ -11,6 +11,7 @@ resource "aws_lambda_function" "this" {
   handler          = local.handler
   runtime          = "python3.9"
   source_code_hash = filebase64sha256(local.pkg)
+  timeout          = 30
 
   environment {
     variables = {

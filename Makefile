@@ -14,7 +14,7 @@ build: clean
 clean:
 	rm -rf build/*
 	rm -rf src/*/
-	rm src/six.py
+	rm -f src/six.py
 
 import:
 	python-lambda-local src/tagdb.py event.json -f handler -l src
@@ -23,6 +23,7 @@ import:
 install:
 	@rbenv install -s
 	@gem install overcommit && overcommit --install && overcommit --sign pre-commit
+	@cd src; pip install -r requirements.txt -t ./
 
 reset:
 	rm ./docker/dynamodb/*.db

@@ -1,5 +1,6 @@
 __pycache__/
 docker/dynamodb/
+.idea/
 src/*
 !src/tagdb.py
 !src/requirements.txt

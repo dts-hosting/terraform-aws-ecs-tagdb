@@ -8,7 +8,7 @@ go through the ECS service tags directly.
 
 ```hcl
 module "tagdb" {
-  source = "github.com/dts-hosting/terraform-aws-ecs-tagdb"
+  source = "github.com/dts-hosting/terraform-aws-ecs-tagdb//modules/tagdb"
 
   # defaults
   tagdb_env                    = "production"
@@ -24,36 +24,23 @@ module "tagdb" {
 
 ## Local testing
 
-Create the DynamoDB tagdb table and run DynamoDB local using Docker:
+[AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) is required for local development and testing.
 
 ```bash
-docker compose up -d
-sudo chown $USER -R docker
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./create_db.sh
+# start DyanamoDB locally & create the tagdb table
+make setup
+
+# import data to local table
+AWS_PROFILE=profile make import
 ```
 
-Run the tagdb function handler to read tags from ECS and import data:
-
-```bash
-# import into ddb local
-pip install python-lambda-local
-AWS_PROFILE=myprofile make import
-
-# if the table is deployed in AWS you can import directly
-AWS_PROFILE=myprofile TAGDB_ENV=production make import
-```
+## Viewing data
 
 Run the scan script to see the imported data:
 
 ```bash
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./scan.sh
+make scan
 ```
-
-Environment variables:
-
-- TAGDB_ENV (default: `test`)
-- TAGDB_KEY_TAG (default: `ServiceId`)
-- TAGDB_TABLE (default: `tagdb`)
 
 ## Building the lambda package
 

@@ -8,9 +8,10 @@ logger.setLevel(logging.INFO)
 if os.environ.get('TAGDB_ENV', 'test') == 'test':
     logger.info('Running with DynamoDB local')
     ddb_client = boto3.resource(
-        'dynamodb', endpoint_url='http://localhost:8000')
+        'dynamodb', endpoint_url='http://dynamodb-local:8000')
 else:
     ddb_client = boto3.resource('dynamodb')
+
 
 ecs_client = boto3.client('ecs')
 ecs_pager = ecs_client.get_paginator('list_services')

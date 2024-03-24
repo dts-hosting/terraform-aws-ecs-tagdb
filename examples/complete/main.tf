@@ -14,9 +14,10 @@ locals {
 }
 
 module "tagdb" {
-  source = "../.."
+  source = "../../modules/tagdb"
 
   tagdb_schedule = "rate(1 minute)"
+  tagdb_table    = local.name
 
   tagdb_table_indexes = {
     BucketImporterIndex = {

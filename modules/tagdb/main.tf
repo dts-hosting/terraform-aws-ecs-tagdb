@@ -1,6 +1,6 @@
 locals {
   handler = "tagdb.handler"
-  pkg     = "${path.module}/build/terraform-aws-ecs-tagdb.zip"
+  pkg     = "${path.module}/../../build/terraform-aws-ecs-tagdb.zip"
   project = "terraform-aws-ecs-tagdb"
 }
 

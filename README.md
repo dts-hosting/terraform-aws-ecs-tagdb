@@ -13,7 +13,6 @@ module "tagdb" {
   # defaults
   tagdb_env                    = "production"
   tagdb_key_tag                = "ServiceId"
-  tagdb_schedule               = "cron(0 0 * * ? *)"
   tagdb_table                  = "tagdb"
   tagdb_table_read_capacity    = 1
   tagdb_table_stream_view_type = "NEW_IMAGE"
@@ -27,11 +26,38 @@ module "tagdb" {
 [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) is required for local development and testing.
 
 ```bash
-# start DyanamoDB locally & create the tagdb table
+make install
+
+# start DynamoDB locally & create the tagdb table
 make setup
 
 # import data to local table
-AWS_PROFILE=profile make import
+make import service=$profile
+```
+
+The `profile` must be a valid AWS profile and the payload is expected at
+`./events/$profile.json`:
+
+```json
+{
+  "version": "0",
+  "id": "ddca6449-b258-46c0-8653-e0e3aEXAMPLE",
+  "detail-type": "ECS Deployment State Change",
+  "source": "aws.ecs",
+  "account": "111122223333",
+  "time": "2020-05-23T12:31:14Z",
+  "region": "us-west-2",
+  "resources": [
+    "INSERT_ECS_SERVICE_ARN_HERE"
+  ],
+  "detail": {
+    "eventType": "INFO",
+    "eventName": "SERVICE_DEPLOYMENT_COMPLETED",
+    "deploymentId": "ecs-svc/123",
+    "updatedAt": "2020-05-23T11:11:11Z",
+    "reason": "ECS deployment deploymentID completed."
+  }
+}
 ```
 
 ## Viewing data

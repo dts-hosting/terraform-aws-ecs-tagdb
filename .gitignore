@@ -10,3 +10,4 @@ src/*
 terraform.tf*
 !terraform.tfvars.example
 .vscode/settings.json
+events/*space*.json

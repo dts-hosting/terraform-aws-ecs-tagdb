@@ -15,6 +15,14 @@
       },
       "aws": {
         "credentials": "profile:collectionspace"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/events/collectionspace.json"
+        }
+      },
+      "sam": {
+        "dockerNetwork": "lambda-local"
       }
     }
   ]

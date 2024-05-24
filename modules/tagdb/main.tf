@@ -9,9 +9,9 @@ resource "aws_lambda_function" "this" {
   function_name    = local.project
   role             = aws_iam_role.this.arn
   handler          = local.handler
-  runtime          = "python3.9"
+  runtime          = "python3.10"
   source_code_hash = filebase64sha256(local.pkg)
-  timeout          = 900
+  timeout          = 30
 
   environment {
     variables = {
@@ -25,13 +25,24 @@ resource "aws_lambda_function" "this" {
 }
 
 resource "aws_cloudwatch_event_rule" "this" {
-  name                = local.project
-  schedule_expression = var.tagdb_schedule
+  name        = "tagdb-ecs-deployment-completed"
+  description = "Fires when an ECS deployment is completed (TagDB)"
+
+  event_pattern = <<PATTERN
+{
+  "source": ["aws.ecs"],
+  "detail-type": ["ECS Deployment State Change"],
+  "detail": {
+    "eventName": ["SERVICE_DEPLOYMENT_COMPLETED"]
+  }
+}
+PATTERN
 }
 
 resource "aws_cloudwatch_event_target" "this" {
-  arn  = aws_lambda_function.this.arn
-  rule = aws_cloudwatch_event_rule.this.id
+  arn       = aws_lambda_function.this.arn
+  rule      = aws_cloudwatch_event_rule.this.id
+  target_id = aws_lambda_function.this.function_name
 }
 
 resource "aws_lambda_permission" "this" {

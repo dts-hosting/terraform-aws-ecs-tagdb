@@ -1,6 +1,9 @@
-import boto3
+"""TagDB Lambda function for processing ECS service tags and updating a DynamoDB table."""
+
 import logging
 import os
+
+import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -14,65 +17,55 @@ else:
 
 
 ecs_client = boto3.client('ecs')
-ecs_pager = ecs_client.get_paginator('list_services')
 
 
-def handler(event, context):
-    batch = []
+def handler(event, _context):
+    """
+    Lambda function handler for processing ECS service tags and updating a DynamoDB table.
+
+    Args:
+        event (dict): The event data passed to the Lambda function.
+        _context (object): The context object passed to the Lambda function.
+
+    Returns:
+        dict: The response from the DynamoDB update operation.
+    """
     key_tag = os.environ.get('TAGDB_KEY_TAG', 'ServiceId')
     table = ddb_client.Table(os.environ.get('TAGDB_TABLE', 'tagdb'))
+    service_arn = event["resources"][0]
 
-    for cluster in ecs_client.list_clusters(maxResults=100).get('clusterArns'):
-        for page in ecs_pager.paginate(cluster=cluster, PaginationConfig={'MaxItems': 1000}):
-            for arn in page.get('serviceArns'):
-                try:
-                    response = ecs_client.list_tags_for_resource(
-                        resourceArn=arn
-                    )
-                    data = {}
-                    for tag in response.get('tags'):
-                        data[tag.get('key')] = tag.get('value')
-
-                    if key_tag in data:
-                        batch.append(data)
-                except Exception as e:
-                    logger.error(f"{e}: {arn}")
-
-    keys = get_keys(table, key_tag)
-    for data in batch:
-        response = update(table, key_tag, data)
-        logger.info(response)
-        if data[key_tag] in keys:
-            keys.remove(data[key_tag])  # remove this entry from keys if found
-
-    # delete items for which there was no matching key (the remaining keys)
-    # i.e. there's no longer a corresponding ecs service for this key
-    for key in keys:
-        response = delete(table, key_tag, key)
-        logger.info(response)
-
-
-def delete(table, key_tag, key):
-    return table.delete_item(
-        Key={
-            key_tag: key
-        }
+    response = ecs_client.list_tags_for_resource(
+        resourceArn=service_arn
     )
 
+    data = {}
+    for tag in response.get('tags'):
+        data[tag.get('key')] = tag.get('value')
 
-def get_keys(table, key_tag):
-    response = table.scan()
-    data = response['Items']
+    if key_tag not in data:
+        return
 
-    while 'LastEvaluatedKey' in response:
-        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        data.extend(response['Items'])
-    return [i[key_tag] for i in data]
+    response = update(table, key_tag, data)
+    logger.info(response)
+    return response
 
 
-def update(table, key_tag, data):
-    logger.info(data)
-    item = data.copy()  # don't mutate the original data
+def update(table, key_tag, item):
+    """
+    Updates an item in the specified DynamoDB table.
+
+    Args:
+        table (boto3.resources.factory.dynamodb.Table): The DynamoDB table to update.
+        key_tag (str): The key tag used to identify the item to update.
+        item (dict): The item to create/update in DynamoDB.
+
+    Returns:
+        dict: The updated item.
+
+    Raises:
+        botocore.exceptions.ClientError: If the update operation fails.
+    """
+    logger.info(item)
     target = item.pop(key_tag)
     update_expression = 'SET {}'.format(','.join(f'#{k}=:{k}' for k in item))
     expression_attribute_values = {f':{k}': v for k, v in item.items()}

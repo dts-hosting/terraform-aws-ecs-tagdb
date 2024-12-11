@@ -12,7 +12,8 @@ build:
 	rm src/*.zip
 
 import:
-	sam local invoke TagDBFunction --docker-network lambda-local --event events/event.json
+	@AWS_PROFILE=$(service) sam local invoke TagDBFunction --docker-network lambda-local \
+		--event events/$(service).json
 
 install:
 	@rbenv install -s
